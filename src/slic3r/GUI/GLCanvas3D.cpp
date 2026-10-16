@@ -2111,7 +2111,9 @@ void GLCanvas3D::render()
     // and the viewport was set incorrectly, leading to tripping glAsserts further down
     // the road (in apply_projection). That's why the minimum size is forced to 10.
     Camera& camera = wxGetApp().plater()->get_camera();
-    camera.set_viewport(0, 0, std::max(10u, (unsigned int)cnv_size.get_width()), std::max(10u, (unsigned int)cnv_size.get_height()));
+    // The 3D scene uses only a part of the SLA preview when the exposure image is shown next to it.
+    const unsigned int scene_width = sla_preview_scene_width((unsigned int)cnv_size.get_width());
+    camera.set_viewport(0, 0, std::max(10u, scene_width), std::max(10u, (unsigned int)cnv_size.get_height()));
     camera.apply_viewport();
 
     if (camera.requires_zoom_to_bed) {
@@ -2156,7 +2158,14 @@ void GLCanvas3D::render()
 
     // draw scene
     glsafe(::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    _render_background();
+    if (scene_width < (unsigned int)cnv_size.get_width()) {
+        // The background covers the whole canvas, also the part next to the 3D scene of the split SLA preview.
+        glsafe(::glViewport(0, 0, (GLsizei)cnv_size.get_width(), (GLsizei)cnv_size.get_height()));
+        _render_background();
+        camera.apply_viewport();
+    }
+    else
+        _render_background();
 
     if (! s_multiple_beds.is_autoslicing()) {
         _render_objects(GLVolumeCollection::ERenderType::Opaque);
@@ -2230,6 +2239,10 @@ void GLCanvas3D::render()
             render_print_statistics(scale);
         }
     }
+
+    if (scene_width < (unsigned int)cnv_size.get_width())
+        // The overlays (toolbars etc.) are placed in the coordinates of the whole canvas, also in the split SLA preview.
+        glsafe(::glViewport(0, 0, (GLsizei)cnv_size.get_width(), (GLsizei)cnv_size.get_height()));
 
     _render_overlays();
 
@@ -7014,6 +7027,32 @@ static void render_sla_layer_legend(const SLAPrint& print, int layer_idx, int cn
 
 
 
+double GLCanvas3D::sla_preview_slider_width() const
+{
+    if (const Preview* preview = dynamic_cast<Preview*>(m_canvas->GetParent()))
+        return preview->get_layers_slider_width();
+    return 0.;
+}
+
+unsigned int GLCanvas3D::sla_preview_scene_width(unsigned int canvas_width) const
+{
+    // The preview of a sliced SLA print is split when the exposure image is enabled:
+    // the 3D scene on the left, the exposure image of the selected layer on the right.
+    if (!m_use_clipping_planes || current_printer_technology() != ptSLA ||
+        dynamic_cast<Preview*>(m_canvas->GetParent()) == nullptr ||
+        !wxGetApp().app_config->get_bool("sla_show_exposure_view"))
+        return canvas_width;
+
+    const SLAPrint* print = this->sla_print();
+    if (print == nullptr || print->objects().empty())
+        return canvas_width;
+
+    const double available = double(canvas_width) - sla_preview_slider_width();
+    if (available < 200.)
+        return canvas_width;
+    return (unsigned int)(available / 2.);
+}
+
 void GLCanvas3D::_render_sla_slices()
 {
     if (!m_use_clipping_planes || current_printer_technology() != ptSLA)
@@ -7025,12 +7064,19 @@ void GLCanvas3D::_render_sla_slices()
         // nothing to render, return
         return;
 
-    if (print->finished()) {
-        double slider_width = 0.;
-        if (const Preview* preview = dynamic_cast<Preview*>(m_canvas->GetParent()))
-            slider_width = preview->get_layers_slider_width();
-        render_sla_layer_legend(*print, m_layer_slider_index, get_canvas_size().get_width() - slider_width, m_bed_selector_current_height);
-    }
+    const Size         cnv_size     = get_canvas_size();
+    const double       slider_width = sla_preview_slider_width();
+    const unsigned int scene_width  = sla_preview_scene_width(cnv_size.get_width());
+
+    if (print->finished())
+        render_sla_layer_legend(*print, m_layer_slider_index,
+                                scene_width < (unsigned int)cnv_size.get_width() ? scene_width : cnv_size.get_width() - slider_width,
+                                m_bed_selector_current_height);
+
+    if (scene_width < (unsigned int)cnv_size.get_width())
+        // The right part of the split preview shows the exposure image of the selected layer.
+        m_sla_exposure_view.render(*print, m_clipping_planes[1].get_data()[3], float(scene_width), 0.f,
+                                   float(cnv_size.get_width() - slider_width) - float(scene_width), float(cnv_size.get_height()));
 
     double clip_min_z = -m_clipping_planes[0].get_data()[3];
     double clip_max_z = m_clipping_planes[1].get_data()[3];

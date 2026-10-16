@@ -4505,6 +4505,44 @@ void PrintConfigDef::init_sla_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInt(0));
 
+    def = this->add("antialiasing", coBool);
+    def->label = L("Anti-aliasing (gray scale level)");
+    def->tooltip = L("Chitubox (CTB) output: anti-aliased edges with gray levels, same as Gray Scale Level in Chitubox. When disabled, the layers contain black and white pixels only, same as None in Chitubox.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(true));
+
+    def = this->add("grayscale_level", coInt);
+    def->label = L("Gray scale level");
+    def->tooltip = L("Chitubox (CTB) output: count of the gray levels of the anti-aliased edges.");
+    def->min = 1;
+    def->max = 8;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(8));
+
+    def = this->add("grayscale_min", coInt);
+    def->label = L("Minimum gray");
+    def->tooltip = L("Chitubox (CTB) output: the gray levels of the anti-aliased edges are spread evenly above this gray up to the maximum gray.");
+    def->min = 0;
+    def->max = 255;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(0));
+
+    def = this->add("grayscale_max", coInt);
+    def->label = L("Maximum gray");
+    def->tooltip = L("Chitubox (CTB) output: gray of the strongest anti-aliased edge level.");
+    def->min = 0;
+    def->max = 255;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(255));
+
+    def = this->add("picture_grayscale", coInt);
+    def->label = L("Picture grayscale");
+    def->tooltip = L("Chitubox (CTB) output: gray of the fully exposed pixels, 255 is full brightness. All the pixels are scaled by it.");
+    def->min = 0;
+    def->max = 255;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(255));
+
     def = this->add("gamma_correction", coFloat);
     def->label = L("Printer gamma correction");
     def->full_label = L("Printer gamma correction");
@@ -4635,6 +4673,133 @@ void PrintConfigDef::init_sla_params()
     def->sidetext = L("s");
     def->min = 0;
     def->set_default_value(new ConfigOptionFloat(15));
+
+    // Build platform motion and light settings of the MSLA printers using the Chitubox (CTB) format.
+    def = this->add("bottom_layers", coInt);
+    def->label = L("Bottom layers");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Number of the first layers exposed by the initial exposure time. Used by the Chitubox (CTB) output.");
+    def->min = 0;
+    def->max = 500;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(6));
+
+    def = this->add("transition_layers", coInt);
+    def->label = L("Transition layers");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Number of the layers after the bottom layers with the exposure time decreasing linearly from the initial exposure time to the exposure time. Used by the Chitubox (CTB) output.");
+    def->min = 0;
+    def->max = 500;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(6));
+
+    def = this->add("tower_bottom_lift_height", coFloat);
+    def->label = L("Bottom lift height");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Distance the build platform is lifted after each bottom layer. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->max = 100;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(3.));
+
+    def = this->add("tower_bottom_lift_speed", coFloat);
+    def->label = L("Bottom lift speed");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Speed of the build platform lift after each bottom layer. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("mm/min");
+    def->min = 1;
+    def->max = 1000;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(100.));
+
+    def = this->add("tower_bottom_retract_speed", coFloat);
+    def->label = L("Bottom retract speed");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Speed of the build platform return after each bottom layer. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("mm/min");
+    def->min = 1;
+    def->max = 1000;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(150.));
+
+    def = this->add("tower_lift_height", coFloat);
+    def->label = L("Lift height");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Distance the build platform is lifted after each layer. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->max = 100;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(3.));
+
+    def = this->add("tower_lift_speed", coFloat);
+    def->label = L("Lift speed");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Speed of the build platform lift after each layer. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("mm/min");
+    def->min = 1;
+    def->max = 1000;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(100.));
+
+    def = this->add("tower_retract_speed", coFloat);
+    def->label = L("Retract speed");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Speed of the build platform return after each layer. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("mm/min");
+    def->min = 1;
+    def->max = 1000;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(150.));
+
+    def = this->add("wait_before_cure", coFloat);
+    def->label = L("Wait before cure");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Rest time after the build platform returns and before the layer is exposed. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("s");
+    def->min = 0;
+    def->max = 300;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(1.));
+
+    def = this->add("wait_after_cure", coFloat);
+    def->label = L("Wait after cure");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Rest time after the layer is exposed and before the build platform is lifted. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("s");
+    def->min = 0;
+    def->max = 300;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    def = this->add("wait_after_lift", coFloat);
+    def->label = L("Wait after lift");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Rest time after the build platform is lifted and before it returns. Used by the Chitubox (CTB) output.");
+    def->sidetext = L("s");
+    def->min = 0;
+    def->max = 300;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0.));
+
+    def = this->add("bottom_light_pwm", coInt);
+    def->label = L("Bottom light intensity");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Intensity (PWM) of the UV light for the bottom layers, 255 is full power. Used by the Chitubox (CTB) output.");
+    def->min = 1;
+    def->max = 255;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(255));
+
+    def = this->add("light_pwm", coInt);
+    def->label = L("Light intensity");
+    def->category = L("Chitubox (CTB)");
+    def->tooltip = L("Intensity (PWM) of the UV light, 255 is full power. Used by the Chitubox (CTB) output.");
+    def->min = 1;
+    def->max = 255;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInt(255));
 
     def = this->add("material_correction", coFloats);
     def->full_label = L("Correction for expansion");
@@ -4892,6 +5057,14 @@ void PrintConfigDef::init_sla_params()
     def->mode = comExpert;
     def->set_default_value(new ConfigOptionFloat(0.5));
     
+    def = this->add("hollowing_keep_main_cavity", coBool);
+    def->label = L("Keep the main cavity");
+    def->category = L("Hollowing");
+    def->tooltip  = L("Hollow only the largest cavity. When hollowing produces several separate cavities, "
+                      "the smaller ones are left solid, so no small pockets of uncured resin are trapped inside.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def = this->add("hollowing_closing_distance", coFloat);
     def->label = L("Closing distance");
     def->category = L("Hollowing");

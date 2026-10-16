@@ -36,6 +36,11 @@ bool GLGizmoHollow::on_init()
     m_desc["offset"]           = _u8L("Offset") + ": ";
     m_desc["quality"]          = _u8L("Quality") + ": ";
     m_desc["closing_distance"] = _u8L("Closing distance") + ": ";
+    m_desc["precision"]        = _u8L("Precision") + ": ";
+    m_desc["precision_low"]    = _u8L("Low");
+    m_desc["precision_middle"] = _u8L("Middle");
+    m_desc["precision_high"]   = _u8L("High");
+    m_desc["keep_main_cavity"] = _u8L("Keep the main cavity");
     m_desc["hole_diameter"]    = _u8L("Hole diameter") + ": ";
     m_desc["hole_depth"]       = _u8L("Hole depth") + ": ";
     m_desc["remove_selected"]  = _u8L("Remove selected holes");
@@ -585,6 +590,7 @@ RENDER_AGAIN:
         std::max(std::max({ImGuiPureWrap::calc_text_size(m_desc.at("offset")).x,
                            ImGuiPureWrap::calc_text_size(m_desc.at("quality")).x,
                            ImGuiPureWrap::calc_text_size(m_desc.at("closing_distance")).x,
+                           ImGuiPureWrap::calc_text_size(m_desc.at("precision")).x,
                            ImGuiPureWrap::calc_text_size(m_desc.at("hole_diameter")).x,
                            ImGuiPureWrap::calc_text_size(m_desc.at("hole_depth")).x}) + m_imgui->scaled(0.5f), clipping_slider_left);
 
@@ -629,6 +635,33 @@ RENDER_AGAIN:
     bool slider_edited =m_imgui->get_last_slider_status().edited; // someone is dragging the slider
     bool slider_released =m_imgui->get_last_slider_status().deactivated_after_edit; // someone has just released the slider
 
+    {
+        // Quick presets of the quality (accuracy of the hollowing), available in all modes.
+        ImGui::AlignTextToFramePadding();
+        ImGuiPureWrap::text(m_desc.at("precision"));
+        ImGui::SameLine(settings_sliders_left, ImGuiPureWrap::get_item_spacing().x);
+        const std::array<std::pair<const char*, float>, 3> presets{{
+            {"precision_low", 0.f}, {"precision_middle", 0.5f}, {"precision_high", 1.f}}};
+        for (size_t i = 0; i < presets.size(); ++i) {
+            const auto &[key, value] = presets[i];
+            if (i > 0)
+                ImGui::SameLine();
+            const bool active = std::abs(quality - value) < 0.01f;
+            if (active)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            const bool clicked = ImGuiPureWrap::button(m_desc.at(key));
+            if (active)
+                ImGui::PopStyleColor();
+            if (clicked && !active) {
+                Plater::TakeSnapshot snapshot(wxGetApp().plater(), _L("Hollowing parameter change"));
+                quality = value;
+                mo->config.set("hollowing_quality", quality);
+                wxGetApp().obj_list()->update_and_show_object_settings_item();
+                config_changed = true;
+            }
+        }
+    }
+
     if (current_mode >= quality_mode) {
         ImGui::AlignTextToFramePadding();
         ImGuiPureWrap::text(m_desc.at("quality"));
@@ -649,6 +682,19 @@ RENDER_AGAIN:
         slider_clicked |= m_imgui->get_last_slider_status().clicked;
         slider_edited |= m_imgui->get_last_slider_status().edited;
         slider_released |= m_imgui->get_last_slider_status().deactivated_after_edit;
+    }
+
+    {
+        auto opts = get_config_options({"hollowing_keep_main_cavity"});
+        bool keep_main_cavity = static_cast<const ConfigOptionBool*>(opts[0].first)->value;
+        if (ImGuiPureWrap::checkbox(m_desc["keep_main_cavity"], keep_main_cavity)) {
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), _L("Hollowing parameter change"));
+            mo->config.set("hollowing_keep_main_cavity", keep_main_cavity);
+            wxGetApp().obj_list()->update_and_show_object_settings_item();
+            config_changed = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGuiPureWrap::tooltip(_u8L(opts[0].second->tooltip), m_imgui->scaled(20.f));
     }
 
     if (slider_clicked) {

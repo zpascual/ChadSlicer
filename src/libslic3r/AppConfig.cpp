@@ -217,6 +217,8 @@ void AppConfig::set_defaults()
 
     if (get("show_estimated_times_in_dbl_slider").empty())
         set("show_estimated_times_in_dbl_slider", "1");
+    if (get("sla_show_exposure_view").empty())
+        set("sla_show_exposure_view", "1");
 
     if (get("show_ruler_in_dbl_slider").empty())
         set("show_ruler_in_dbl_slider", "0");

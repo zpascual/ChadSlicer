@@ -1270,6 +1270,9 @@ PRINT_CONFIG_CLASS_DEFINE(
 
     // Indirectly controls the minimum size of created cavities.
     ((ConfigOptionFloat, hollowing_closing_distance))
+
+    // Hollow only the largest cavity
+    ((ConfigOptionBool, hollowing_keep_main_cavity))
 )
 
 enum SLAMaterialSpeed { slamsSlow, slamsFast, slamsHighViscosity };
@@ -1317,6 +1320,21 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloatNullable,               material_ow_pad_wall_slope))
     ((ConfigOptionFloat,                       area_fill))
     ((ConfigOptionIntNullable,                 printing_temperature))
+
+    // Chitubox (CTB) motion and light params
+    ((ConfigOptionInt,                         bottom_layers))
+    ((ConfigOptionInt,                         transition_layers))
+    ((ConfigOptionFloat,                       tower_bottom_lift_height))
+    ((ConfigOptionFloat,                       tower_bottom_lift_speed))
+    ((ConfigOptionFloat,                       tower_bottom_retract_speed))
+    ((ConfigOptionFloat,                       tower_lift_height))
+    ((ConfigOptionFloat,                       tower_lift_speed))
+    ((ConfigOptionFloat,                       tower_retract_speed))
+    ((ConfigOptionFloat,                       wait_before_cure))
+    ((ConfigOptionFloat,                       wait_after_cure))
+    ((ConfigOptionFloat,                       wait_after_lift))
+    ((ConfigOptionInt,                         bottom_light_pwm))
+    ((ConfigOptionInt,                         light_pwm))
     
 
     //tilt params
@@ -1370,6 +1388,12 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                      elefant_foot_compensation))
     ((ConfigOptionFloat,                      elefant_foot_min_width))
     ((ConfigOptionFloat,                      gamma_correction))
+    // Chitubox (CTB) anti-aliasing
+    ((ConfigOptionBool,                       antialiasing))
+    ((ConfigOptionInt,                        grayscale_level))
+    ((ConfigOptionInt,                        grayscale_min))
+    ((ConfigOptionInt,                        grayscale_max))
+    ((ConfigOptionInt,                        picture_grayscale))
     ((ConfigOptionFloat,                      fast_tilt_time))
     ((ConfigOptionFloat,                      slow_tilt_time))
     ((ConfigOptionFloat,                      high_viscosity_tilt_time))

@@ -532,6 +532,22 @@ sla::RasterEncoder SL1Archive::get_encoder() const
     return sla::PNGRasterEncoder{};
 }
 
+SLAArchiveWriter::LayerImage SL1Archive::decode_layer(size_t layer_idx) const
+{
+    LayerImage image;
+    if (layer_idx >= m_layers.size())
+        return image;
+
+    const sla::EncodedRaster &rst = m_layers[layer_idx];
+    png::ImageGreyscale       img;
+    if (png::decode_png(png::ReadBuf{rst.data(), rst.size()}, img)) {
+        image.pixels = std::move(img.buf);
+        image.width  = img.cols;
+        image.height = img.rows;
+    }
+    return image;
+}
+
 static void write_thumbnail(Zipper &zipper, const ThumbnailData &data)
 {
     size_t png_size = 0;

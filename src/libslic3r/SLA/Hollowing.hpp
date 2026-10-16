@@ -167,6 +167,10 @@ inline InteriorPtr generate_interior(const indexed_triangle_set &mesh,
 }
 
 // Will do the hollowing
+// Keep only the largest of the separate cavities of the interior mesh (by volume), the others are removed.
+// Returns the count of the removed cavities.
+size_t keep_largest_cavity(indexed_triangle_set &interior_mesh);
+
 void hollow_mesh(TriangleMesh &mesh, const HollowingConfig &cfg, int flags = 0);
 
 // Hollowing prepared in "interior", merge with original mesh

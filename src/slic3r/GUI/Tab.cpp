@@ -3055,6 +3055,14 @@ void TabPrinter::build_sla()
     optgroup->append_single_option_line("elefant_foot_compensation");
     optgroup->append_single_option_line("elefant_foot_min_width");
     optgroup->append_single_option_line("gamma_correction");
+
+    // Used only by printers with the Chitubox (CTB) output format.
+    optgroup = page->new_optgroup(L("Chitubox (CTB) anti-aliasing"));
+    optgroup->append_single_option_line("antialiasing");
+    optgroup->append_single_option_line("grayscale_level");
+    optgroup->append_single_option_line("grayscale_min");
+    optgroup->append_single_option_line("grayscale_max");
+    optgroup->append_single_option_line("picture_grayscale");
     
     optgroup = page->new_optgroup(L("Exposure"));
     optgroup->append_single_option_line("min_exposure_time");
@@ -5482,6 +5490,22 @@ void TabSLAMaterial::build()
     optgroup->append_single_option_line("exposure_time");
     optgroup->append_single_option_line("initial_exposure_time");
 
+    // Used only by printers with the Chitubox (CTB) output format.
+    optgroup = page->new_optgroup(L("Chitubox (CTB) lift, retract & light"));
+    optgroup->append_single_option_line("bottom_layers");
+    optgroup->append_single_option_line("transition_layers");
+    optgroup->append_single_option_line("tower_bottom_lift_height");
+    optgroup->append_single_option_line("tower_bottom_lift_speed");
+    optgroup->append_single_option_line("tower_bottom_retract_speed");
+    optgroup->append_single_option_line("tower_lift_height");
+    optgroup->append_single_option_line("tower_lift_speed");
+    optgroup->append_single_option_line("tower_retract_speed");
+    optgroup->append_single_option_line("wait_before_cure");
+    optgroup->append_single_option_line("wait_after_cure");
+    optgroup->append_single_option_line("wait_after_lift");
+    optgroup->append_single_option_line("bottom_light_pwm");
+    optgroup->append_single_option_line("light_pwm");
+
     optgroup = page->new_optgroup(L("Corrections"));
     auto line = Line{ m_config->def()->get("material_correction")->full_label, "" };
     for (auto& axis : { "X", "Y", "Z" }) {
@@ -6105,6 +6129,7 @@ void TabSLAPrint::build()
     optgroup->append_single_option_line("hollowing_min_thickness");
     optgroup->append_single_option_line("hollowing_quality");
     optgroup->append_single_option_line("hollowing_closing_distance");
+    optgroup->append_single_option_line("hollowing_keep_main_cavity");
 
     page = add_options_page(L("Advanced"), "wrench");
     optgroup = page->new_optgroup(L("Slicing"));

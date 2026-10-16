@@ -29,7 +29,23 @@ protected:
     virtual sla::RasterEncoder get_encoder() const = 0;
 
 public:
+    // 8-bit grayscale image of a layer as written to the archive, row major from the top row.
+    struct LayerImage {
+        std::vector<uint8_t> pixels;
+        size_t width  = 0;
+        size_t height = 0;
+
+        bool empty() const { return pixels.empty(); }
+    };
+
     virtual ~SLAArchiveWriter() = default;
+
+    // Count of the layers drawn by draw_layers().
+    size_t layer_count() const { return m_layers.size(); }
+
+    // Decode a layer drawn by draw_layers() back to pixels, e.g. for the preview.
+    // Returns an empty image if the layer doesn't exist or the format can't be decoded.
+    virtual LayerImage decode_layer(size_t /*layer_idx*/) const { return {}; }
 
     // Fn have to be thread safe: void(sla::RasterBase& raster, size_t lyrid);
     template<class Fn, class CancelFn, class EP = ExecutionTBB>

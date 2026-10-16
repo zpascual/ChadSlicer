@@ -773,6 +773,12 @@ void DSForLayers::render_cog_menu()
             if (m_cb_change_app_config)
                 m_cb_change_app_config("show_estimated_times_in_dbl_slider", m_show_estimated_times ? "1" : "0");
         }
+        if (m_draw_mode == dmSlaPrint &&
+            ImGuiPureWrap::menu_item_with_icon(_u8L("Show exposure image").c_str(), "", icon_sz, 0, m_show_sla_exposure_view)) {
+            m_show_sla_exposure_view = !m_show_sla_exposure_view;
+            if (m_cb_change_app_config)
+                m_cb_change_app_config("sla_show_exposure_view", m_show_sla_exposure_view ? "1" : "0");
+        }
         if (ImGuiPureWrap::menu_item_with_icon(_u8L("Sequential slider applied only to top layer").c_str(), "", icon_sz, 0, m_seq_top_layer_only)) {
             m_seq_top_layer_only = !m_seq_top_layer_only;
             if (m_cb_change_app_config)

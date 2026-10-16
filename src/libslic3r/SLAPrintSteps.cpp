@@ -418,6 +418,11 @@ void SLAPrint::Steps::hollow_model(SLAPrintObject &po)
 
         indexed_triangle_set &m = sla::get_mesh(*po.m_hollowing_data->interior);
 
+        if (po.m_config.hollowing_keep_main_cavity.getBool()) {
+            const size_t removed = sla::keep_largest_cavity(m);
+            BOOST_LOG_TRIVIAL(info) << "Hollowing: kept the main cavity, " << removed << " smaller cavities left solid.";
+        }
+
         if (!m.empty()) {
             // simplify mesh lossless
             float loss_less_max_error = 2*std::numeric_limits<float>::epsilon();

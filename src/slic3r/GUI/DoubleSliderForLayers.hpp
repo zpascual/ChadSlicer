@@ -90,6 +90,7 @@ public:
     bool    is_new_print(const std::string& print_obj_idxs);
     void    set_imgui_wrapper(Slic3r::GUI::ImGuiWrapper* imgui) { m_imgui = imgui; }
     void    show_estimated_times(bool show)                     { m_show_estimated_times = show; }
+    void    show_sla_exposure_view(bool show)                   { m_show_sla_exposure_view = show; }
     void    show_ruler(bool show, bool show_bg)                 { m_show_ruler = show; m_show_ruler_bg = show_bg; }
     void    seq_top_layer_only(bool show)                       { m_seq_top_layer_only = show; }
 
@@ -148,6 +149,7 @@ private:
     bool        is_osx                  { false };
     bool        m_allow_editing         { true };
     bool        m_show_estimated_times  { true };
+    bool        m_show_sla_exposure_view{ true };
     bool        m_show_ruler            { false };
     bool        m_show_ruler_bg         { true };
     bool        m_show_cog_menu         { false };

@@ -40,6 +40,8 @@ public:
                       const SLAPrint       &print,
                       const ThumbnailsList &thumbnails,
                       const std::string    &projectname = "") override;
+
+    LayerImage decode_layer(size_t layer_idx) const override;
 };
 
 class SL1Reader: public SLAArchiveReader {

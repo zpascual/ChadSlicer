@@ -281,6 +281,19 @@ void cut_drainholes(std::vector<ExPolygons> & obj_slices,
         obj_slices[i] = diff_ex(obj_slices[i], hole_slices[i]);
 }
 
+size_t keep_largest_cavity(indexed_triangle_set &interior_mesh)
+{
+    std::vector<indexed_triangle_set> cavities = its_split(interior_mesh);
+    if (cavities.size() < 2)
+        return 0;
+
+    auto largest = std::max_element(cavities.begin(), cavities.end(), [](const auto &a, const auto &b) {
+        return std::abs(its_volume(a)) < std::abs(its_volume(b));
+    });
+    interior_mesh = std::move(*largest);
+    return cavities.size() - 1;
+}
+
 void hollow_mesh(TriangleMesh &mesh, const HollowingConfig &cfg, int flags)
 {
     InteriorPtr interior = generate_interior(mesh.its, cfg, JobController{});

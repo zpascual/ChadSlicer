@@ -19,6 +19,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -577,6 +578,15 @@ public:
     // The aggregated and leveled print records from various objects.
     // TODO: use this structure for the preview in the future.
     const std::vector<PrintLayer>& print_layers() const { return m_printer_input; }
+
+    // Index of the printed layer (in print_layers() and in the output archive) at the height
+    // above the build platform (in mm, as shown by the preview layer slider).
+    // Valid only when finished().
+    std::optional<size_t> layer_index_at_height(double z) const;
+
+    // Exposure image of the printed layer, as written to the output archive.
+    // Valid only when finished(), empty when the archive format can't be decoded.
+    SLAArchiveWriter::LayerImage layer_exposure_image(size_t layer_idx) const;
 
     void export_print(const std::string &fname, const std::string &projectname = "")
     {

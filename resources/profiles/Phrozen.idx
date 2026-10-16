@@ -1,0 +1,4 @@
+min_slic3r_version = 2.9.0
+1.2.0 Chitubox anti-aliasing (gray scale level) settings of the Sonic Mighty 8K.
+1.1.0 Added 0.05 and 0.10 mm prints and the resins published by Phrozen for the Sonic Mighty 8K.
+1.0.0 Initial bundle: Sonic Mighty 8K with Chitubox (CTB) output.

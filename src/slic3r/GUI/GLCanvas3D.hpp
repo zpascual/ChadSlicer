@@ -26,6 +26,7 @@
 
 #include <arrange-wrapper/ArrangeSettingsDb_AppCfg.hpp>
 #include "ArrangeSettingsDialogImgui.hpp"
+#include "SLAExposureView.hpp"
 
 #include "libslic3r/Slicing.hpp"
 
@@ -508,6 +509,8 @@ private:
     bool m_use_clipping_planes;
     std::array<SlaCap, 2> m_sla_caps;
     int m_layer_slider_index = -1;
+    // Top view of the exposure of the selected SLA layer in the preview.
+    SLAExposureView m_sla_exposure_view;
     std::string m_sidebar_field;
     // when true renders an extra frame by not resetting m_dirty to false
     // see request_extra_frame()
@@ -754,13 +757,16 @@ public:
 
     void set_layer_slider_index(int i) { m_layer_slider_index = i; }
 
+    // Width of the 3D scene in the SLA preview, smaller than the canvas when the exposure image is shown next to it.
+    unsigned int sla_preview_scene_width(unsigned int canvas_width) const;
+
     void set_clipping_plane(unsigned int id, const ClippingPlane& plane) {
         if (id < 2) {
             m_clipping_planes[id] = plane;
             m_sla_caps[id].reset();
         }
     }
-    void reset_clipping_planes_cache() { m_sla_caps[0].triangles.clear(); m_sla_caps[1].triangles.clear(); }
+    void reset_clipping_planes_cache() { m_sla_caps[0].triangles.clear(); m_sla_caps[1].triangles.clear(); m_sla_exposure_view.invalidate(); }
     void set_use_clipping_planes(bool use) { m_use_clipping_planes = use; }
 
     bool                                get_use_clipping_planes() const { return m_use_clipping_planes; }
@@ -1028,6 +1034,7 @@ private:
     void _render_camera_target_validation_box();
 #endif // ENABLE_SHOW_CAMERA_TARGET
     void _render_sla_slices();
+    double sla_preview_slider_width() const;
     void _render_selection_sidebar_hints() { m_selection.render_sidebar_hints(m_sidebar_field); }
     bool _render_undo_redo_stack(const bool is_undo, float pos_x);
     bool _render_arrange_menu(float pos_x, bool current_bed);

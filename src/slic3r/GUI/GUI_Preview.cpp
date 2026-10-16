@@ -404,6 +404,7 @@ void Preview::create_sliders()
     m_layers_slider->SetEmUnit(wxGetApp().em_unit());
     m_layers_slider->set_imgui_wrapper(wxGetApp().imgui());
     m_layers_slider->show_estimated_times(wxGetApp().app_config->get_bool("show_estimated_times_in_dbl_slider"));
+    m_layers_slider->show_sla_exposure_view(wxGetApp().app_config->get_bool("sla_show_exposure_view"));
     m_layers_slider->seq_top_layer_only(wxGetApp().app_config->get_bool("seq_top_layer_only"));
     m_layers_slider->show_ruler(wxGetApp().app_config->get_bool("show_ruler_in_dbl_slider"), wxGetApp().app_config->get_bool("show_ruler_bg_in_dbl_slider"));
 

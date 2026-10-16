@@ -925,6 +925,12 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         "display_orientation"sv,
         "sla_archive_format"sv,
         "sla_output_precision"sv,
+        // Chitubox (CTB) anti-aliasing
+        "antialiasing"sv,
+        "grayscale_level"sv,
+        "grayscale_min"sv,
+        "grayscale_max"sv,
+        "picture_grayscale"sv,
         // tilt params
         "delay_before_exposure"sv,
         "delay_after_exposure"sv,
@@ -993,6 +999,20 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         "material_ow_absolute_correction"sv,
         "material_ow_pad_wall_slope"sv,
         "printer_model"sv,
+        // Used only when exporting the Chitubox (CTB) file.
+        "bottom_layers"sv,
+        "transition_layers"sv,
+        "tower_bottom_lift_height"sv,
+        "tower_bottom_lift_speed"sv,
+        "tower_bottom_retract_speed"sv,
+        "tower_lift_height"sv,
+        "tower_lift_speed"sv,
+        "tower_retract_speed"sv,
+        "wait_before_cure"sv,
+        "wait_after_cure"sv,
+        "wait_after_lift"sv,
+        "bottom_light_pwm"sv,
+        "light_pwm"sv,
     };
 
     std::vector<SLAPrintStep> steps;
@@ -1024,6 +1044,29 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         for (SLAPrintObject *object : m_objects)
             invalidated |= object->invalidate_step(ostep);
     return invalidated;
+}
+
+std::optional<size_t> SLAPrint::layer_index_at_height(double z) const
+{
+    if (!finished() || m_printer_input.empty())
+        return std::nullopt;
+
+    // Printer layer levels are measured from the build platform, same as the preview slider.
+    const coord_t level = scaled(z);
+    auto it = std::lower_bound(m_printer_input.begin(), m_printer_input.end(), PrintLayer(level));
+    if (it == m_printer_input.end())
+        --it;
+    else if (it != m_printer_input.begin() && level - std::prev(it)->level() < it->level() - level)
+        --it;
+
+    return size_t(it - m_printer_input.begin());
+}
+
+SLAArchiveWriter::LayerImage SLAPrint::layer_exposure_image(size_t layer_idx) const
+{
+    if (!finished() || !m_archiver || layer_idx >= m_archiver->layer_count())
+        return {};
+    return m_archiver->decode_layer(layer_idx);
 }
 
 // Returns true if an object step is done on all objects and there's at least one object.
@@ -1066,6 +1109,7 @@ bool SLAPrintObject::invalidate_state_by_config_options(const std::vector<t_conf
             || opt_key == "hollowing_min_thickness"
             || opt_key == "hollowing_quality"
             || opt_key == "hollowing_closing_distance"
+            || opt_key == "hollowing_keep_main_cavity"
             ) {
             steps.emplace_back(slaposHollowing);
         } else if (
