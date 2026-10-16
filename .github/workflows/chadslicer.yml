@@ -48,7 +48,8 @@ jobs:
 
       - name: Build ChadSlicer
         run: |
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DSLIC3R_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="$env:DEPS_PREFIX"
+          # Release only to match the dependencies, otherwise the find modules ask for debug libraries.
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_CONFIGURATION_TYPES=Release -DSLIC3R_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="$env:DEPS_PREFIX"
           cmake --build build --config Release --parallel
 
       - name: Package
@@ -95,6 +96,12 @@ jobs:
       - name: Build dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
         run: |
+          # gmplib.org is not reachable from the runners, take the same tarball from the GNU mirror.
+          # The dependency build checks its SHA256 and skips the download.
+          mkdir -p deps/build/downloads/GMP
+          curl -fsSL --retry 3 -o deps/build/downloads/GMP/gmp-6.2.1.tar.bz2 https://ftpmirror.gnu.org/gnu/gmp/gmp-6.2.1.tar.bz2 \
+            || curl -fsSL --retry 3 -o deps/build/downloads/GMP/gmp-6.2.1.tar.bz2 https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.bz2
+          echo "eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c  deps/build/downloads/GMP/gmp-6.2.1.tar.bz2" | shasum -a 256 -c
           cmake -S deps -B deps/build -G Ninja -DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET
           cmake --build deps/build
 
