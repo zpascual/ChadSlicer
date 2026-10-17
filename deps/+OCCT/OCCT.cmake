@@ -1,3 +1,10 @@
+# OCCT sets a C++ standard for LLVM Clang only. AppleClang of older Xcode versions defaults to C++98,
+# which can't parse the OCCT headers.
+set(_occt_cxx_standard "")
+if (APPLE)
+    set(_occt_cxx_standard -DCMAKE_CXX_STANDARD=14)
+endif ()
+
 add_cmake_project(OCCT
 	# Versions newer than 7.6.1 contain a bug that causes chamfers to be triangulated incorrectly.
 	# So, before any updating, it is necessary to check whether SPE-2257 is still happening.
@@ -9,6 +16,7 @@ add_cmake_project(OCCT
     CMAKE_ARGS
         -DINSTALL_DIR_LAYOUT=Unix # LMBBS
         -DBUILD_LIBRARY_TYPE=Static
+        ${_occt_cxx_standard}
         -DUSE_TK=OFF
         -DUSE_TBB=OFF
         -DUSE_FREETYPE=OFF

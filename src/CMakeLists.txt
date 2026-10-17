@@ -172,8 +172,8 @@ if (SLIC3R_GUI)
         target_link_libraries(PrusaSlicer PRIVATE -ldl)
     endif ()
     if (WIN32)
-        find_library(PSAPI_LIB NAMES Psapi)
-        target_link_libraries(PrusaSlicer PRIVATE ${PSAPI_LIB})
+        # Part of the Windows SDK, the linker finds it on its own (find_library does not search the SDK).
+        target_link_libraries(PrusaSlicer PRIVATE psapi)
     endif ()
 endif ()
 
